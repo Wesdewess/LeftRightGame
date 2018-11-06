@@ -25,9 +25,9 @@ Servo hatch;
 boolean active;
 boolean endScreen = false;
 int score;
-int mode;
+int mode = 0;
 //during game
-int side=3;
+int side=2;
 boolean isCorrect;
 boolean dropped;
 String dMode;
@@ -65,7 +65,8 @@ void setup() {
   updateDisplay();
   //first, check wheter the user has selected single or multiplayer before entering the loop
   mode = checkPlayers(); //mode is (0)single- or (1)multiplayer
-  //mode = 0;
+  Serial.println("mode is " + mode);
+  //mode = 1;
   //activate game
   active = true;
   lcd.clear();
@@ -110,9 +111,10 @@ void loop() {
     
   //player 2 chooses left or right
   side = chooseLeftRight();
-  
+  updateDisplay();
   //player 2 chooses when to drop
   //updateDisplay();
+  delay(reactionTime);
   dropBall();
   updateDisplay();
 
@@ -145,10 +147,18 @@ void checkRestart(){
 }
 
 int checkPlayers(){ //check to see if single or multiplayer is chosen. Dont exit funtion before user has chosen
-    int mode;
-    //check which side the joystick is moved: left=single, right=multi
-    mode = chooseLeftRight();
-    return mode;
+    int chosenSide;
+  while(tiltY()<5000 && tiltY()>-5000){
+    //do nothing, wait for user input
+  }
+  if(tiltY()<=-5000){
+   chosenSide = 0;
+  }
+  if(tiltY()>=5000){
+   chosenSide = 1; 
+  }
+  Serial.println("side: " + chosenSide);
+  return chosenSide;
 }
 
 int randomLeftRight(){ //decides where the ball should be dropped (singleplayer)
@@ -160,13 +170,13 @@ int randomLeftRight(){ //decides where the ball should be dropped (singleplayer)
 
 int chooseLeftRight(){ //player 2 chooses where to drop the ball (multiplayer)
   int chosenSide;
-  while(tiltX()<5000 && tiltX()>-5000){
+  while(tiltY()<5000 && tiltY()>-5000){
     //do nothing, wait for user input
   }
-  if(tiltX()<-4999){
+  if(tiltY()<=-5000){
    chosenSide = 0;
   }
-  if(tiltX()>4999){
+  if(tiltY()>=5000){
    chosenSide = 1; 
   }
   return chosenSide;
@@ -174,8 +184,8 @@ int chooseLeftRight(){ //player 2 chooses where to drop the ball (multiplayer)
 
 void dropBall(){ //opens the hatch at the top to drop a ball
     hatch.write(0);
-    delay(300);
-    hatch.write(90);
+    delay(150);
+    hatch.write(80);
     droppedBalls++;
     dropped=true;
 }
@@ -189,14 +199,14 @@ void playerDrop(){ //player 2 chooses when to drop the ball
 int checkLeftRight(){ //to check if the player dropped a ball down the left or the right hole
     int distance = checkDistance();
     int dSide;
-    while(distance>24){
+    while(distance>23){
     
     distance = checkDistance();
-  if(distance<=26){
+  if(distance<=23){
     if(distance<=10){ //if the ball is left
     dSide = 0;  
     }
-    if(distance>15 && distance<=24){ //if the ball is right
+    if(distance>13 && distance<=23){ //if the ball is right
     dSide = 1;
     }
     dropped=false;
@@ -273,10 +283,12 @@ void updateDisplay(){ //updates information on display
   }else{ 
     if(active==false){ //voordat het spel is begonnen
   //display: Kies 1 of 2 speler modus
+  //lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Kies een modus:");
   lcd.setCursor(0,1);
   lcd.print("1 of 2 spelers"); 
+  return;
  } else{
     if(mode==0){
       dMode = "Single";
@@ -288,10 +300,10 @@ void updateDisplay(){ //updates information on display
       if(side==0){
         dSide = "Links ";
       }
-      if(side==2){
+      if(side==1){
         dSide = "Rechts";
       }
-      if(side==3){
+      if(side==2){
         
       }
            
